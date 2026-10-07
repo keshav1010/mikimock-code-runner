@@ -123,7 +123,7 @@ function buildSubmitCode(
     }
 }
 
-function parseRunnerOutput(
+export function parseRunnerOutput(
     output: string,
     error: string | null,
     status: string,
@@ -152,6 +152,7 @@ function parseRunnerOutput(
     }
 
     const results = [];
+    const seen = new Set<number>();
 
     const checker =
         getChecker(
@@ -175,6 +176,14 @@ function parseRunnerOutput(
             continue;
         }
 
+        if (!event || typeof event !== "object" ||
+            !Number.isSafeInteger(event.testCase) || seen.has(event.testCase) ||
+            (event.type !== "RESULT" && event.type !== "ERROR") ||
+            (event.type === "RESULT" && typeof event.actual !== "string") ||
+            (event.type === "ERROR" && event.error != null && typeof event.error !== "string")) {
+            continue;
+        }
+
         const testCase =
             testCases.find((tc) =>
                 tc.testCaseNumber === event.testCase
@@ -183,6 +192,7 @@ function parseRunnerOutput(
         if (!testCase) {
             continue;
         }
+        seen.add(event.testCase);
 
         if (event.type === "ERROR") {
             results.push({
@@ -201,12 +211,16 @@ function parseRunnerOutput(
 
         if (event.type === "RESULT") {
 
-            const passed =
-                checker.check({
+            let passed = false;
+            try {
+                passed = checker.check({
                     inputRaw: testCase.input,
                     expectedRaw: testCase.expectedOutput,
                     actualRaw: event.actual
                 });
+            } catch {
+                // Invalid user output is a wrong answer, not a server exception.
+            }
 
             results.push({
                 testCaseNumber: event.testCase,

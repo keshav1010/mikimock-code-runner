@@ -19,6 +19,10 @@ export function validateSubmitPayload(
     testCases: TestCase[]
 ): void {
 
+    if (!config) {
+        throw new Error("Execution config is required");
+    }
+
     if (
         config.checkerType &&
         !isSupportedCheckerType(config.checkerType)

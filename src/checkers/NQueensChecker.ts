@@ -17,6 +17,8 @@ export class NQueensChecker implements Checker {
         const actual =
             parseJsonSafely(context.actualRaw);
 
+        const expected = parseJsonSafely(context.expectedRaw);
+
         const n =
             typeof input === "number"
                 ? input
@@ -26,6 +28,12 @@ export class NQueensChecker implements Checker {
             typeof n !== "number" ||
             !Array.isArray(actual)
         ) {
+            return false;
+        }
+
+        // Require the complete set represented by the trusted expected answer.
+        if (!Array.isArray(expected) || actual.length !== expected.length ||
+            new Set(actual.map(board => JSON.stringify(board))).size !== actual.length) {
             return false;
         }
 

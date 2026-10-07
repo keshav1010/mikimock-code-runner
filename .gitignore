@@ -58,6 +58,7 @@ Desktop.ini
 # ===========================
 tmp/
 temp/
+mikimock-runner/
 .cache/
 
 # ===========================

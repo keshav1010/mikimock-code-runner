@@ -64,6 +64,11 @@ export class TopKFrequentChecker implements Checker {
         const threshold =
             sorted[k - 1][1];
 
+        // Threshold ties are allowed, but every strictly more frequent item is mandatory.
+        for (const [value, count] of frequency) {
+            if (count > threshold && !uniqueActual.has(value)) return false;
+        }
+
         for (const value of actual) {
             if (!frequency.has(value)) {
                 return false;

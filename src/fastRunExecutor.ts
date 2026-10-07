@@ -113,7 +113,7 @@ function buildRunCode(
     }
 }
 
-function parseRunOutput(
+export function parseRunOutput(
     output: string,
     error: string | null,
     status: string,
@@ -143,6 +143,12 @@ function parseRunOutput(
         try {
             event = JSON.parse(line);
         } catch {
+            continue;
+        }
+
+        if (!event || typeof event !== "object" || event.testCase !== 1 ||
+            (event.type === "RESULT" && typeof event.actual !== "string") ||
+            (event.type === "ERROR" && event.error != null && typeof event.error !== "string")) {
             continue;
         }
 
